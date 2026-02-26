@@ -3,6 +3,7 @@ import math
 import random
 import copy
 import os
+from collections import Counter
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -32,11 +33,42 @@ class DecisionEngine:
         return self.value_label_map.get(rounded, "medium")
 
     def calculate_roc_weights(self, n):
+        """Standard ROC weights for strict priority order."""
         weights = []
         for i in range(1, n + 1):
             w = sum(1 / j for j in range(i, n + 1)) / n
             weights.append(w)
         return weights
+
+    def calculate_roc_weights_with_ties(self, priorities):
+        """
+        ROC weights that handle tied priorities.
+
+        Tied criteria occupy the same positions in the ordering.
+        Their weights are averaged so tied criteria are treated equally.
+
+        Example: priorities = [1, 1, 2]
+          - Positions 1 and 2 are both occupied by the tied pair.
+          - Each tied criterion gets avg(ROC_weight_1, ROC_weight_2).
+          - The third criterion gets ROC_weight_3 normally.
+        """
+        n = len(priorities)
+        base = self.calculate_roc_weights(n)
+
+        sorted_unique = sorted(set(priorities))
+        slot_cursor = 0
+        priority_to_slots = {}
+        for p in sorted_unique:
+            count = priorities.count(p)
+            priority_to_slots[p] = list(range(slot_cursor, slot_cursor + count))
+            slot_cursor += count
+
+        priority_to_weight = {
+            p: sum(base[s] for s in slots) / len(slots)
+            for p, slots in priority_to_slots.items()
+        }
+
+        return [priority_to_weight[p] for p in priorities]
 
     def _to_float(self, v):
         try:
@@ -104,7 +136,6 @@ class DecisionEngine:
     def explain_all(self, options, criteria):
         results, _, _, norm = self.run_topsis(options, criteria)
 
-        # Ideal and worst raw values across options
         ideal_raw = {}
         worst_raw = {}
         for c in criteria:
@@ -155,16 +186,23 @@ def analyze():
     criteria_data = data['criteria']
     options_data = data['options']
 
-    weights = engine.calculate_roc_weights(len(criteria_data))
+    # Extract priorities — default to position order if not provided
+    priorities = [int(c.get('priority', i + 1)) for i, c in enumerate(criteria_data)]
+    priority_counts = Counter(priorities)
+
+    # Assign weights using tied-aware ROC
+    weights = engine.calculate_roc_weights_with_ties(priorities)
 
     criteria = []
     for i, c in enumerate(criteria_data):
         criteria.append({
-            "id":      f"c{i}",
-            "name":    c['name'],
-            "type":    c['type'],
-            "dynamic": c['dynamic'],
-            "weight":  weights[i]
+            "id":       f"c{i}",
+            "name":     c['name'],
+            "type":     c['type'],
+            "dynamic":  c['dynamic'],
+            "priority": priorities[i],
+            "tied":     priority_counts[priorities[i]] > 1,
+            "weight":   weights[i]
         })
 
     options = []
@@ -176,10 +214,7 @@ def analyze():
 
     original_options = copy.deepcopy(options)
 
-    # Simulation
     sim = engine.simulate(options, criteria)
-
-    # Full TOPSIS + explanations on original values
     all_explanations, _ = engine.explain_all(original_options, criteria)
 
     # Winner reasoning
@@ -187,9 +222,7 @@ def analyze():
     winner_expl = all_explanations[winner]
     best_crit = min(winner_expl, key=lambda e: (e['gap_pct'], -e['weight']))
     value_label = engine.value_to_label(best_crit['actual'])
-    reasoning = (
-        f"'{winner}' is selected due to its {value_label} {best_crit['name']}."
-    )
+    reasoning = f"'{winner}' is selected due to its {value_label} {best_crit['name']}."
 
     # Per-option breakdown
     breakdown = []
@@ -219,10 +252,12 @@ def analyze():
         "goal": goal,
         "criteria": [
             {
-                "name":    c['name'],
-                "type":    c['type'],
-                "dynamic": c['dynamic'],
-                "weight":  round(c['weight'] * 100, 2)
+                "name":     c['name'],
+                "type":     c['type'],
+                "dynamic":  c['dynamic'],
+                "priority": c['priority'],
+                "tied":     c['tied'],
+                "weight":   round(c['weight'] * 100, 2)
             }
             for c in criteria
         ],
