@@ -33,7 +33,6 @@
       .header p  { font-size: 1.1em; opacity: 0.9; }
 
       .content { padding: 40px; }
-
       .section { margin-bottom: 40px; }
 
       .section-title {
@@ -51,7 +50,6 @@
         border-radius: 2px;
       }
 
-      /* ── Priority Order Banner ── */
       .priority-banner {
         background: linear-gradient(135deg, #fff3cd, #ffe69c);
         border: 2px solid #ffc107;
@@ -63,83 +61,48 @@
         gap: 12px;
       }
       .priority-banner .icon { font-size: 1.5em; flex-shrink: 0; }
-      .priority-banner .text strong {
-        color: #856404;
-        font-size: 1.05em;
-        display: block;
-        margin-bottom: 4px;
-      }
-      .priority-banner .text span { color: #664d03; font-size: 0.95em; }
+      .priority-banner .text strong { color: #856404; font-size: 1.05em; display: block; margin-bottom: 4px; }
+      .priority-banner .text span  { color: #664d03; font-size: 0.95em; }
 
       .input-group { margin-bottom: 20px; }
       label { display: block; font-weight: 600; color: #333; margin-bottom: 8px; }
 
       input[type="text"], input[type="number"], select {
-        width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 1em;
-        transition: border-color 0.3s;
+        width: 100%; padding: 12px 15px;
+        border: 2px solid #e0e0e0; border-radius: 8px;
+        font-size: 1em; transition: border-color 0.3s;
       }
-      input[type="text"]:focus, input[type="number"]:focus, select:focus {
-        outline: none; border-color: #667eea;
-      }
+      input[type="text"]:focus, select:focus { outline: none; border-color: #667eea; }
 
-      .btn {
-        padding: 12px 30px; border: none; border-radius: 8px;
-        font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s;
-      }
-      .btn-primary  { background: #667eea; color: white; }
+      .btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+      .btn-primary   { background: #667eea; color: white; }
       .btn-primary:hover  { background: #5568d3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
       .btn-secondary { background: #f0f0f0; color: #333; }
       .btn-secondary:hover { background: #e0e0e0; }
-      .btn-danger   { background: #e74c3c; color: white; }
+      .btn-danger    { background: #e74c3c; color: white; }
       .btn-danger:hover { background: #c0392b; }
 
       .criteria-list, .options-list { display: flex; flex-direction: column; gap: 15px; }
 
       .criteria-item, .option-item {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 4px solid #667eea;
+        background: #f8f9fa; padding: 20px;
+        border-radius: 10px; border-left: 4px solid #667eea;
       }
-
       .criteria-item-header, .option-item-header {
         display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
       }
 
-      .priority-badge {
-        background: #667eea; color: white;
-        padding: 5px 15px; border-radius: 20px;
-        font-size: 0.9em; font-weight: 600;
-      }
+      .priority-badge { background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: 600; }
       .priority-badge.top { background: #e74c3c; }
 
-      .criteria-inputs, .option-inputs {
-        display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px;
-      }
+      .criteria-inputs { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; }
+      .option-values   { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+      .add-btn         { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
 
-      .option-values {
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px; margin-top: 15px;
-      }
-
-      .add-btn { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
-
-      /* ── Results ── */
-      .results-container {
-        background: #f8f9fa; border-radius: 10px;
-        padding: 30px; margin-top: 30px; display: none;
-      }
-      .results-container.show {
-        display: block; animation: slideIn 0.5s ease;
-      }
-      @keyframes slideIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
+      /* Results */
+      .results-container { background: #f8f9fa; border-radius: 10px; padding: 30px; margin-top: 30px; display: none; }
+      .results-container.show { display: block; animation: slideIn 0.5s ease; }
+      @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
       .result-item {
         background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px;
@@ -152,92 +115,67 @@
       .result-rank  { font-size: 1.5em; font-weight: 700; color: #667eea; min-width: 50px; }
       .result-name  { flex: 1; font-size: 1.2em; font-weight: 600; color: #333; }
       .result-score { font-size: 1.3em; font-weight: 700; color: #667eea; }
-      .result-confidence { font-size: 0.95em; color: #888; margin-left: 10px; }
+      .trophy       { font-size: 2em; margin-right: 15px; }
 
-      .trophy { font-size: 2em; margin-right: 15px; }
-
-      /* confidence bar */
       .conf-bar-wrap { height: 8px; background: #e0e0e0; border-radius: 4px; margin-top: 6px; }
       .conf-bar      { height: 8px; background: #667eea; border-radius: 4px; transition: width 1s ease; }
 
-      /* reasoning */
-      .reasoning-box {
-        background: white; border-left: 4px solid #52c41a;
-        padding: 25px; border-radius: 10px; margin-top: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      }
+      .reasoning-box { background: white; border-left: 4px solid #52c41a; padding: 25px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
       .reasoning-title { font-size: 1.3em; font-weight: 700; color: #52c41a; margin-bottom: 10px; }
       .reasoning-text  { font-size: 1.05em; color: #333; line-height: 1.6; }
-      .gap-note        { margin-top: 10px; font-size: 0.88em; color: #999; font-style: italic; }
 
-      /* option breakdown */
       .breakdown-section { margin-top: 30px; }
       .breakdown-title   { font-size: 1.3em; font-weight: 700; color: #667eea; margin-bottom: 15px; }
 
-      .breakdown-card {
-        background: white; border-radius: 10px;
-        padding: 20px; margin-bottom: 15px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        border-left: 4px solid #ccc;
-      }
+      .breakdown-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border-left: 4px solid #ccc; }
       .breakdown-card.winner-card { border-left-color: #667eea; }
 
-      .breakdown-card-header {
-        display: flex; justify-content: space-between;
-        align-items: center; margin-bottom: 12px;
-      }
+      .breakdown-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
       .breakdown-card-name { font-size: 1.1em; font-weight: 700; color: #333; }
       .breakdown-card-conf { font-size: 0.95em; color: #667eea; font-weight: 600; }
 
-      .sw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+      .selection-note {
+        font-size: 0.95em; color: #555; font-style: italic;
+        margin-bottom: 12px; padding-bottom: 10px;
+        border-bottom: 1px dashed #e0e0e0;
+      }
+
+      .sw-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
       .sw-box   { background: #f8f9fa; padding: 12px; border-radius: 8px; }
       .sw-label { font-size: 0.85em; font-weight: 700; margin-bottom: 8px; }
       .sw-label.s { color: #52c41a; }
       .sw-label.w { color: #e74c3c; }
 
-      .sw-item { font-size: 0.9em; color: #555; padding: 4px 0; border-bottom: 1px solid #eee; }
-      .sw-item:last-child { border-bottom: none; }
-      .sw-item .crit-name { font-weight: 600; }
-      .sw-item .gap-tag   { float: right; font-size: 0.85em; color: #999; }
-
-      /* weights */
-      .criteria-weights { background: white; padding: 20px; border-radius: 10px; margin-top: 20px; }
-      .weight-item {
-        display: flex; justify-content: space-between;
-        padding: 10px 0; border-bottom: 1px solid #e0e0e0;
+      .sw-item {
+        font-size: 0.92em; color: #444;
+        padding: 5px 8px; margin-bottom: 4px;
+        background: white; border-radius: 5px;
+        border: 1px solid #e8e8e8; font-weight: 500;
       }
+
+      .criteria-weights { background: white; padding: 20px; border-radius: 10px; margin-top: 20px; }
+      .weight-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
       .weight-item:last-child { border-bottom: none; }
       .weight-bar { height: 8px; background: #667eea; border-radius: 4px; margin-top: 5px; }
 
-      .dynamic-tag {
-        background: #fff3e0; color: #e65100;
-        font-size: 0.75em; padding: 2px 8px;
-        border-radius: 10px; margin-left: 8px; font-weight: 600;
-      }
+      .dynamic-tag { background: #fff3e0; color: #e65100; font-size: 0.75em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: 600; }
 
       .analyze-btn-container { text-align: center; margin-top: 40px; }
       .analyze-btn { padding: 15px 50px; font-size: 1.2em; }
 
       .loading { display: none; text-align: center; padding: 20px; }
       .loading.show { display: block; }
-      .spinner {
-        border: 4px solid #f3f3f3; border-top: 4px solid #667eea;
-        border-radius: 50%; width: 40px; height: 40px;
-        animation: spin 1s linear infinite; margin: 0 auto;
-      }
+      .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-      .error-message {
-        background: #fee; color: #c33;
-        padding: 15px; border-radius: 8px; margin: 15px 0; display: none;
-      }
+      .error-message { background: #fee; color: #c33; padding: 15px; border-radius: 8px; margin: 15px 0; display: none; }
       .error-message.show { display: block; }
 
       @media (max-width: 768px) {
-        .criteria-inputs  { grid-template-columns: 1fr; }
-        .sw-grid          { grid-template-columns: 1fr; }
-        .header h1        { font-size: 1.8em; }
-        .content          { padding: 20px; }
+        .criteria-inputs { grid-template-columns: 1fr; }
+        .sw-grid         { grid-template-columns: 1fr; }
+        .header h1       { font-size: 1.8em; }
+        .content         { padding: 20px; }
       }
     </style>
   </head>
@@ -250,7 +188,6 @@
 
       <div class="content">
 
-        <!-- Decision Goal -->
         <div class="section">
           <div class="input-group">
             <label for="decision-goal">What are you deciding?</label>
@@ -258,56 +195,35 @@
           </div>
         </div>
 
-        <!-- Criteria Section -->
         <div class="section">
           <div class="section-title">Step 1: Define Criteria</div>
-
-          <!-- ⚠️ Priority Order Banner -->
           <div class="priority-banner">
             <div class="icon">⚠️</div>
             <div class="text">
               <strong>Enter criteria in Priority Order — Most Important First!</strong>
-              <span>
-                Weights are auto-assigned based on position.
-                Priority #1 gets the highest weight, Priority #2 gets less, and so on.
-                If you put Price at #1 and Performance at #2, Price will influence the result more.
-                <strong>Reorder before clicking Analyze.</strong>
-              </span>
+              <span>Weights are auto-assigned based on position. Priority #1 gets the highest weight. <strong>Reorder before clicking Analyze.</strong></span>
             </div>
           </div>
-
           <div id="criteria-list" class="criteria-list"></div>
-
-          <button class="btn btn-secondary add-btn" onclick="addCriterion()">
-            ➕ Add Criterion
-          </button>
+          <button class="btn btn-secondary add-btn" onclick="addCriterion()">➕ Add Criterion</button>
         </div>
 
-        <!-- Options Section -->
         <div class="section">
           <div class="section-title">Step 2: Define Options</div>
           <div id="options-list" class="options-list"></div>
-          <button class="btn btn-secondary add-btn" onclick="addOption()">
-            ➕ Add Option
-          </button>
+          <button class="btn btn-secondary add-btn" onclick="addOption()">➕ Add Option</button>
         </div>
 
-        <!-- Analyze Button -->
         <div class="analyze-btn-container">
-          <button class="btn btn-primary analyze-btn" onclick="analyzeDecision()">
-            🔍 Analyze Decision
-          </button>
+          <button class="btn btn-primary analyze-btn" onclick="analyzeDecision()">🔍 Analyze Decision</button>
         </div>
 
         <div id="loading" class="loading">
           <div class="spinner"></div>
-          <p style="margin-top:15px; color:#667eea; font-weight:600">
-            Running 1,000 simulations of the future...
-          </p>
+          <p style="margin-top:15px; color:#667eea; font-weight:600">Running simulations of the future...</p>
         </div>
 
         <div id="error-message" class="error-message"></div>
-
         <div id="results" class="results-container"></div>
       </div>
     </div>
@@ -360,18 +276,15 @@
       }
 
       function updatePriorities() {
-        const items = document.querySelectorAll(".criteria-item");
-        items.forEach((item, index) => {
+        document.querySelectorAll(".criteria-item").forEach((item, index) => {
           const badge = item.querySelector(".priority-badge");
           if (badge) {
             badge.textContent = `Priority #${index + 1}`;
             badge.className = index === 0 ? "priority-badge top" : "priority-badge";
           }
         });
-        // Refresh option value labels
         document.querySelectorAll(".option-item").forEach(opt => {
-          const id = opt.id.split("-")[1];
-          updateOptionValues(id);
+          updateOptionValues(opt.id.split("-")[1]);
         });
       }
 
@@ -405,34 +318,28 @@
         const container = document.getElementById(`option-values-${optionId}`);
         if (!container) return;
         container.innerHTML = "";
-        const criteria = document.querySelectorAll(".criteria-item");
-        criteria.forEach((crit, index) => {
+        document.querySelectorAll(".criteria-item").forEach((crit, index) => {
           const cid  = crit.id.split("-")[1];
-          const name = document.getElementById(`criteria-name-${cid}`)?.value || `Criterion ${index+1}`;
+          const name = document.getElementById(`criteria-name-${cid}`)?.value || `Criterion ${index + 1}`;
           const isDynamic = document.getElementById(`criteria-dynamic-${cid}`)?.value === "true";
           const valueDiv = document.createElement("div");
           valueDiv.className = "input-group";
           valueDiv.innerHTML = `
             <label>${name}${isDynamic ? ' <span class="dynamic-tag">🔄 dynamic</span>' : ''}</label>
-            <input type="text" id="option-${optionId}-value-${index}" placeholder="e.g., High, Low, 7, 1200">
+            <input type="text" id="option-${optionId}-value-${index}" placeholder="e.g., High, Low, 7">
           `;
           container.appendChild(valueDiv);
         });
       }
 
-      // Live update labels when criteria names or dynamic flags change
       document.addEventListener("input", function (e) {
         if (e.target.id.startsWith("criteria-name-") || e.target.id.startsWith("criteria-dynamic-")) {
-          document.querySelectorAll(".option-item").forEach(opt => {
-            updateOptionValues(opt.id.split("-")[1]);
-          });
+          document.querySelectorAll(".option-item").forEach(opt => updateOptionValues(opt.id.split("-")[1]));
         }
       });
       document.addEventListener("change", function (e) {
         if (e.target.id.startsWith("criteria-dynamic-")) {
-          document.querySelectorAll(".option-item").forEach(opt => {
-            updateOptionValues(opt.id.split("-")[1]);
-          });
+          document.querySelectorAll(".option-item").forEach(opt => updateOptionValues(opt.id.split("-")[1]));
         }
       });
 
@@ -442,9 +349,8 @@
 
         const goal = document.getElementById("decision-goal").value.trim();
 
-        // Collect criteria
         const criteria = [];
-        document.querySelectorAll(".criteria-item").forEach((elem, index) => {
+        document.querySelectorAll(".criteria-item").forEach((elem) => {
           const id      = elem.id.split("-")[1];
           const name    = document.getElementById(`criteria-name-${id}`)?.value.trim();
           const type    = document.getElementById(`criteria-type-${id}`)?.value;
@@ -452,7 +358,6 @@
           if (name) criteria.push({ name, type, dynamic });
         });
 
-        // Collect options
         const options = [];
         document.querySelectorAll(".option-item").forEach((elem) => {
           const id   = elem.id.split("-")[1];
@@ -499,8 +404,9 @@
 
       function displayResults(data) {
         const div = document.getElementById("results");
+        const medals = ['🥇', '🥈', '🥉'];
 
-        // ── Weights ──
+        // Weights
         let html = `<h2 style="color:#667eea;margin-bottom:20px">📊 Results: ${data.goal}</h2>`;
         html += `<div class="criteria-weights"><h3 style="color:#667eea;margin-bottom:15px">Auto-Assigned Weights (Priority Order)</h3>`;
         data.criteria.forEach((c, i) => {
@@ -512,18 +418,18 @@
               </span>
               <span style="font-weight:700;color:#667eea">${c.weight.toFixed(2)}%</span>
             </div>
-            <div class="weight-bar" style="width:${Math.min(c.weight,100)}%"></div>`;
+            <div class="weight-bar" style="width:${Math.min(c.weight, 100)}%"></div>`;
         });
         html += `</div>`;
 
-        // ── Simulation Results ──
-        html += `<h3 style="color:#667eea;margin-top:30px;margin-bottom:15px">🎲 Simulation Results <small style="font-size:0.7em;color:#999">(1,000 future scenarios)</small></h3>`;
+        // Simulation results
+        html += `<h3 style="color:#667eea;margin-top:30px;margin-bottom:15px">🎲 Simulation Results</h3>`;
         data.simulation_results.forEach((r, i) => {
           const isWinner = i === 0;
           html += `
             <div class="result-item ${isWinner ? 'winner' : ''}">
               ${isWinner ? '<span class="trophy">🏆</span>' : ''}
-              <span class="result-rank">${isWinner ? '🥇' : r.name === data.simulation_results[1]?.name ? '🥈' : '🥉'}</span>
+              <span class="result-rank">${medals[i] || (i + 1)}</span>
               <div style="flex:1">
                 <span class="result-name">${r.name}</span>
                 <div class="conf-bar-wrap"><div class="conf-bar" style="width:${r.confidence}%"></div></div>
@@ -532,57 +438,51 @@
             </div>`;
         });
 
-        // ── Reasoning ──
+        // Reasoning
         if (data.reasoning) {
           html += `
             <div class="reasoning-box">
               <div class="reasoning-title">💡 Why This Option Won</div>
               <div class="reasoning-text">${data.reasoning}</div>
-              <p class="gap-note">⚠️ ${data.gap_note}</p>
             </div>`;
         }
 
-        // ── Option Breakdown ──
-        html += `<div class="breakdown-section">
-          <div class="breakdown-title">📋 Option Breakdown — Strengths & Weaknesses</div>`;
+        // Option breakdown
+        html += `<div class="breakdown-section"><div class="breakdown-title">📋 Option Breakdown — Strengths & Weaknesses</div>`;
 
         data.option_breakdown.forEach(opt => {
           const isWinner = opt.rank === 1;
+
+          // strengths and weaknesses are plain string arrays
+          const strengthsHtml = opt.strengths.length === 0
+            ? `<div class="sw-item" style="color:#aaa">None</div>`
+            : opt.strengths.map(name => `<div class="sw-item">✅ ${name}</div>`).join('');
+
+          const weaknessesHtml = opt.weaknesses.length === 0
+            ? `<div class="sw-item" style="color:#aaa">None</div>`
+            : opt.weaknesses.map(name => `<div class="sw-item">❌ ${name}</div>`).join('');
+
           html += `
             <div class="breakdown-card ${isWinner ? 'winner-card' : ''}">
               <div class="breakdown-card-header">
                 <span class="breakdown-card-name">${isWinner ? '🏆 ' : ''}${opt.name}</span>
                 <span class="breakdown-card-conf">${opt.confidence.toFixed(1)}% confidence</span>
               </div>
+              <div class="selection-note">💬 ${opt.selection_note}</div>
               <div class="sw-grid">
                 <div class="sw-box">
-                  <div class="sw-label s">✅ Strengths (gap ≤ 40% from ideal)</div>
-                  ${opt.strengths.length === 0
-                    ? `<div class="sw-item" style="color:#aaa">None</div>`
-                    : opt.strengths.map(s => `
-                      <div class="sw-item">
-                        <span class="crit-name">${s.name}</span>
-                        <span class="gap-tag">${s.actual} → ideal ${s.ideal} | gap ${s.gap}%</span>
-                      </div>`).join('')
-                  }
+                  <div class="sw-label s">✅ Strengths</div>
+                  ${strengthsHtml}
                 </div>
                 <div class="sw-box">
-                  <div class="sw-label w">❌ Weaknesses (gap > 40% from ideal)</div>
-                  ${opt.weaknesses.length === 0
-                    ? `<div class="sw-item" style="color:#aaa">None</div>`
-                    : opt.weaknesses.map(w => `
-                      <div class="sw-item">
-                        <span class="crit-name">${w.name}</span>
-                        <span class="gap-tag">${w.actual} → ideal ${w.ideal} | gap ${w.gap}%</span>
-                      </div>`).join('')
-                  }
+                  <div class="sw-label w">❌ Weaknesses</div>
+                  ${weaknessesHtml}
                 </div>
               </div>
             </div>`;
         });
 
         html += `</div>`;
-
         div.innerHTML = html;
         div.classList.add("show");
         div.scrollIntoView({ behavior: "smooth", block: "start" });
