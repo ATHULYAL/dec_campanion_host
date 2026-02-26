@@ -16,269 +16,219 @@ class DecisionEngine:
 
     def __init__(self):
         self.qualitative_map = {
-            "very low":1,"low":3,"medium":5,
-            "high":7,"very high":9
+            "very low": 1, "low": 3, "medium": 5,
+            "high": 7, "very high": 9
+        }
+        self.value_label_map = {
+            1: "very low", 2: "very low",
+            3: "low",      4: "low",
+            5: "medium",   6: "medium",
+            7: "high",     8: "high",
+            9: "very high"
         }
 
+    def value_to_label(self, value):
+        rounded = max(1, min(9, round(float(value))))
+        return self.value_label_map.get(rounded, "medium")
 
-    def calculate_roc_weights(self,n):
-
-        weights=[]
-
-        for i in range(1,n+1):
-
-            w=sum(1/j for j in range(i,n+1))/n
-
+    def calculate_roc_weights(self, n):
+        weights = []
+        for i in range(1, n + 1):
+            w = sum(1 / j for j in range(i, n + 1)) / n
             weights.append(w)
-
         return weights
 
-
-    def _to_float(self,v):
-
+    def _to_float(self, v):
         try:
             return float(v)
         except:
+            return float(self.qualitative_map.get(str(v).lower().strip(), 5))
 
-            return float(
-                self.qualitative_map.get(
-                    str(v).lower().strip(),5
-                )
-            )
-
-
-    def run_topsis(self,options,criteria):
-
-        norm={}
-
+    def run_topsis(self, options, criteria):
+        norm = {}
         for c in criteria:
-
-            cid=c['id']
-
-            sq=sum(o['values'][cid]**2 for o in options)
-
-            den=math.sqrt(sq) if sq>0 else 1
-
+            cid = c['id']
+            sq = sum(o['values'][cid] ** 2 for o in options)
+            den = math.sqrt(sq) if sq > 0 else 1
             for o in options:
+                norm.setdefault(o['name'], {})
+                norm[o['name']][cid] = (o['values'][cid] / den) * c['weight']
 
-                norm.setdefault(o['name'],{})
-
-                norm[o['name']][cid]=(
-                    o['values'][cid]/den
-                )*c['weight']
-
-
-        best={}
-        worst={}
-
+        best = {}
+        worst = {}
         for c in criteria:
-
-            cid=c['id']
-
-            vals=[norm[o['name']][cid] for o in options]
-
-            if c['type']=="benefit":
-
-                best[cid]=max(vals)
-                worst[cid]=min(vals)
-
+            cid = c['id']
+            vals = [norm[o['name']][cid] for o in options]
+            if c['type'] == "benefit":
+                best[cid] = max(vals)
+                worst[cid] = min(vals)
             else:
+                best[cid] = min(vals)
+                worst[cid] = max(vals)
 
-                best[cid]=min(vals)
-                worst[cid]=max(vals)
-
-
-        results=[]
-
+        results = []
         for o in options:
-
-            name=o['name']
-
-            d1=math.sqrt(sum(
-                (norm[name][c['id']]-best[c['id']])**2
-                for c in criteria
+            name = o['name']
+            d1 = math.sqrt(sum(
+                (norm[name][c['id']] - best[c['id']]) ** 2 for c in criteria
             ))
-
-            d2=math.sqrt(sum(
-                (norm[name][c['id']]-worst[c['id']])**2
-                for c in criteria
+            d2 = math.sqrt(sum(
+                (norm[name][c['id']] - worst[c['id']]) ** 2 for c in criteria
             ))
+            score = d2 / (d1 + d2) if d1 + d2 > 0 else 0.5
+            results.append({"name": name, "score": score})
 
-            score=d2/(d1+d2) if d1+d2>0 else 0.5
-
-            results.append({
-                "name":name,
-                "score":score
-            })
-
-
-        return sorted(
-            results,
-            key=lambda x:x['score'],
-            reverse=True
+        return (
+            sorted(results, key=lambda x: x['score'], reverse=True),
+            best, worst, norm
         )
 
-
-    def simulate(self,options,criteria):
-
-        counts={o['name']:0 for o in options}
-
+    def simulate(self, options, criteria):
+        counts = {o['name']: 0 for o in options}
         for _ in range(300):
-
-            sim=[]
-
+            sim = []
             for o in options:
-
-                vals=o['values'].copy()
-
+                vals = o['values'].copy()
                 for c in criteria:
-
                     if c['dynamic']:
-
-                        vals[c['id']]=max(
-                            1,
-                            min(9,
-                                vals[c['id']]
-                                +random.gauss(0,1)
-                            )
-                        )
-
-                sim.append({
-                    "name":o['name'],
-                    "values":vals
-                })
-
-
-            res=self.run_topsis(sim,criteria)
-
-            counts[res[0]['name']]+=1
-
+                        vals[c['id']] = max(1, min(9, vals[c['id']] + random.gauss(0, 1)))
+                sim.append({"name": o['name'], "values": vals})
+            res, _, _, _ = self.run_topsis(sim, criteria)
+            counts[res[0]['name']] += 1
 
         return sorted(
-
-            [
-                {
-                    "name":n,
-                    "confidence":round(c/3,1)
-                }
-                for n,c in counts.items()
-            ],
-
-            key=lambda x:x['confidence'],
-            reverse=True
+            [{"name": n, "confidence": round(c / 3, 1)} for n, c in counts.items()],
+            key=lambda x: x['confidence'], reverse=True
         )
 
+    def explain_all(self, options, criteria):
+        results, _, _, norm = self.run_topsis(options, criteria)
+
+        # Ideal and worst raw values across options
+        ideal_raw = {}
+        worst_raw = {}
+        for c in criteria:
+            cid = c['id']
+            raw_vals = [o['values'][cid] for o in options]
+            if c['type'] == 'benefit':
+                ideal_raw[cid] = max(raw_vals)
+                worst_raw[cid] = min(raw_vals)
+            else:
+                ideal_raw[cid] = min(raw_vals)
+                worst_raw[cid] = max(raw_vals)
+
+        all_explanations = {}
+        for o in options:
+            name = o['name']
+            explanation = []
+            for c in criteria:
+                cid = c['id']
+                actual = o['values'][cid]
+                ideal_val = ideal_raw[cid]
+                worst_val = worst_raw[cid]
+                raw_range = abs(ideal_val - worst_val)
+                gap_pct = abs(actual - ideal_val) / raw_range * 100 if raw_range > 0 else 0.0
+                explanation.append({
+                    "name":    c['name'],
+                    "actual":  actual,
+                    "gap_pct": round(gap_pct, 1),
+                    "weight":  c['weight'],
+                })
+            explanation.sort(key=lambda x: x['gap_pct'])
+            all_explanations[name] = explanation
+
+        return all_explanations, results
 
 
 @app.route("/")
 def index():
-
     return render_template("index.html")
 
 
-
-@app.route("/analyze",methods=["POST"])
+@app.route("/analyze", methods=["POST"])
 def analyze():
 
-    data=request.json
+    data = request.json
+    engine = DecisionEngine()
 
-    engine=DecisionEngine()
+    goal = data['goal']
+    criteria_data = data['criteria']
+    options_data = data['options']
 
-    goal=data['goal']
+    weights = engine.calculate_roc_weights(len(criteria_data))
 
-    criteria_data=data['criteria']
+    criteria = []
+    for i, c in enumerate(criteria_data):
+        criteria.append({
+            "id":      f"c{i}",
+            "name":    c['name'],
+            "type":    c['type'],
+            "dynamic": c['dynamic'],
+            "weight":  weights[i]
+        })
 
-    options_data=data['options']
+    options = []
+    for o in options_data:
+        vals = {}
+        for i, v in enumerate(o['values']):
+            vals[f"c{i}"] = engine._to_float(v)
+        options.append({"name": o['name'], "values": vals})
 
+    original_options = copy.deepcopy(options)
 
-    weights=engine.calculate_roc_weights(
-        len(criteria_data)
+    # Simulation
+    sim = engine.simulate(options, criteria)
+
+    # Full TOPSIS + explanations on original values
+    all_explanations, _ = engine.explain_all(original_options, criteria)
+
+    # Winner reasoning
+    winner = sim[0]['name']
+    winner_expl = all_explanations[winner]
+    best_crit = min(winner_expl, key=lambda e: (e['gap_pct'], -e['weight']))
+    value_label = engine.value_to_label(best_crit['actual'])
+    reasoning = (
+        f"'{winner}' is selected due to its {value_label} {best_crit['name']}."
     )
 
+    # Per-option breakdown
+    breakdown = []
+    for o in original_options:
+        name = o['name']
+        expl = all_explanations[name]
+        confidence = next(r['confidence'] for r in sim if r['name'] == name)
+        rank = next(i + 1 for i, r in enumerate(sim) if r['name'] == name)
 
-    criteria=[]
+        opt_best = min(expl, key=lambda e: (e['gap_pct'], -e['weight']))
+        opt_label = engine.value_to_label(opt_best['actual'])
+        selection_note = f"'{name}' is notable for its {opt_label} {opt_best['name']}."
 
-    for i,c in enumerate(criteria_data):
-
-        criteria.append({
-
-            "id":f"c{i}",
-            "name":c['name'],
-            "type":c['type'],
-            "dynamic":c['dynamic'],
-            "weight":weights[i]
-
-        })
-
-
-    options=[]
-
-    for o in options_data:
-
-        vals={}
-
-        for i,v in enumerate(o['values']):
-
-            vals[f"c{i}"]=engine._to_float(v)
-
-        options.append({
-
-            "name":o['name'],
-            "values":vals
-
-        })
-
-
-    sim=engine.simulate(options,criteria)
-
-    winner=sim[0]['name']
-
-
-    breakdown=[]
-
-    for i,o in enumerate(sim):
+        strengths  = [e['name'] for e in expl if e['gap_pct'] <= 40]
+        weaknesses = [e['name'] for e in expl if e['gap_pct'] > 40]
 
         breakdown.append({
-
-            "name":o['name'],
-            "rank":i+1,
-            "confidence":o['confidence'],
-            "strengths":[],
-            "weaknesses":[]
-
+            "name":           name,
+            "rank":           rank,
+            "confidence":     confidence,
+            "selection_note": selection_note,
+            "strengths":      strengths,
+            "weaknesses":     weaknesses,
         })
 
-
     return jsonify({
-
-        "goal":goal,
-
-        "criteria":[
-
+        "goal": goal,
+        "criteria": [
             {
-                "name":c['name'],
-                "type":c['type'],
-                "dynamic":c['dynamic'],
-                "weight":round(c['weight']*100,2)
-
+                "name":    c['name'],
+                "type":    c['type'],
+                "dynamic": c['dynamic'],
+                "weight":  round(c['weight'] * 100, 2)
             }
-
             for c in criteria
-
         ],
-
-        "simulation_results":sim,
-
-        "reasoning":
-
-        f"{winner} performed best overall across simulated futures.",
-
-        "option_breakdown":breakdown,
-
-        "gap_note":
-
-        "Gap values depend on entered options."
-
+        "simulation_results": sim,
+        "reasoning":          reasoning,
+        "option_breakdown":   breakdown,
     })
 
 
