@@ -72,7 +72,17 @@
         border: 2px solid #e0e0e0; border-radius: 8px;
         font-size: 1em; transition: border-color 0.3s;
       }
-      input[type="text"]:focus, select:focus { outline: none; border-color: #667eea; }
+      input[type="text"]:focus, input[type="number"]:focus, select:focus {
+        outline: none; border-color: #667eea;
+      }
+
+      /* Compact priority number box */
+      .priority-number-input {
+        width: 80px !important;
+        text-align: center;
+        font-weight: 700;
+        color: #667eea;
+      }
 
       .btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s; }
       .btn-primary   { background: #667eea; color: white; }
@@ -92,12 +102,16 @@
         display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
       }
 
-      .priority-badge { background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: 600; }
-      .priority-badge.top { background: #e74c3c; }
+      /* 4-col grid: name | type | dynamic | priority# */
+      .criteria-inputs {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 80px;
+        gap: 15px;
+        align-items: end;
+      }
 
-      .criteria-inputs { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; }
-      .option-values   { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
-      .add-btn         { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
+      .option-values { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+      .add-btn       { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
 
       /* Results */
       .results-container { background: #f8f9fa; border-radius: 10px; padding: 30px; margin-top: 30px; display: none; }
@@ -156,9 +170,10 @@
       .criteria-weights { background: white; padding: 20px; border-radius: 10px; margin-top: 20px; }
       .weight-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
       .weight-item:last-child { border-bottom: none; }
-      .weight-bar { height: 8px; background: #667eea; border-radius: 4px; margin-top: 5px; }
+      .weight-bar  { height: 8px; background: #667eea; border-radius: 4px; margin-top: 5px; }
 
       .dynamic-tag { background: #fff3e0; color: #e65100; font-size: 0.75em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: 600; }
+      .tied-tag    { background: #e8f4fd; color: #1565c0; font-size: 0.75em; padding: 2px 8px; border-radius: 10px; margin-left: 6px; font-weight: 600; }
 
       .analyze-btn-container { text-align: center; margin-top: 40px; }
       .analyze-btn { padding: 15px 50px; font-size: 1.2em; }
@@ -200,8 +215,12 @@
           <div class="priority-banner">
             <div class="icon">⚠️</div>
             <div class="text">
-              <strong>Enter criteria in Priority Order — Most Important First!</strong>
-              <span>Weights are auto-assigned based on position. Priority #1 gets the highest weight. <strong>Reorder before clicking Analyze.</strong></span>
+              <strong>Assign a Priority number to each criterion — lower number = more important.</strong>
+              <span>
+                Weights are auto-assigned from priority.
+                <strong>Ties are allowed</strong> — give two criteria the same number and they share equal weight.
+                e.g. both at 1 = equal importance · one at 1 and another at 2 = first ranks higher.
+              </span>
             </div>
           </div>
           <div id="criteria-list" class="criteria-list"></div>
@@ -242,7 +261,7 @@
         div.id = `criterion-${criteriaCount}`;
         div.innerHTML = `
           <div class="criteria-item-header">
-            <span class="priority-badge" id="badge-${criteriaCount}">Priority #${criteriaCount}</span>
+            <span style="font-weight:600;color:#667eea">Criterion #${criteriaCount}</span>
             <button class="btn btn-danger" onclick="removeCriterion(${criteriaCount})" style="padding:5px 15px;font-size:0.9em">Remove</button>
           </div>
           <div class="criteria-inputs">
@@ -264,28 +283,26 @@
                 <option value="true">Yes — changes over time 🔄</option>
               </select>
             </div>
+            <div class="input-group">
+              <label title="Lower = more important. Same number = tied (equal weight).">Priority #</label>
+              <input
+                type="number"
+                id="criteria-priority-${criteriaCount}"
+                class="priority-number-input"
+                value="${criteriaCount}"
+                min="1" max="99"
+                title="Lower = more important. Same number = tied."
+              >
+            </div>
           </div>
         `;
         list.appendChild(div);
-        updatePriorities();
+        refreshOptionLabels();
       }
 
       function removeCriterion(id) {
         const el = document.getElementById(`criterion-${id}`);
-        if (el) { el.remove(); updatePriorities(); }
-      }
-
-      function updatePriorities() {
-        document.querySelectorAll(".criteria-item").forEach((item, index) => {
-          const badge = item.querySelector(".priority-badge");
-          if (badge) {
-            badge.textContent = `Priority #${index + 1}`;
-            badge.className = index === 0 ? "priority-badge top" : "priority-badge";
-          }
-        });
-        document.querySelectorAll(".option-item").forEach(opt => {
-          updateOptionValues(opt.id.split("-")[1]);
-        });
+        if (el) { el.remove(); refreshOptionLabels(); }
       }
 
       function addOption() {
@@ -314,34 +331,38 @@
         if (el) el.remove();
       }
 
+      function refreshOptionLabels() {
+        document.querySelectorAll(".option-item").forEach(opt => {
+          updateOptionValues(opt.id.split("-")[1]);
+        });
+      }
+
       function updateOptionValues(optionId) {
         const container = document.getElementById(`option-values-${optionId}`);
         if (!container) return;
         container.innerHTML = "";
         document.querySelectorAll(".criteria-item").forEach((crit, index) => {
-          const cid  = crit.id.split("-")[1];
-          const name = document.getElementById(`criteria-name-${cid}`)?.value || `Criterion ${index + 1}`;
+          const cid       = crit.id.split("-")[1];
+          const name      = document.getElementById(`criteria-name-${cid}`)?.value || `Criterion ${index + 1}`;
           const isDynamic = document.getElementById(`criteria-dynamic-${cid}`)?.value === "true";
-          const valueDiv = document.createElement("div");
+          const priority  = document.getElementById(`criteria-priority-${cid}`)?.value || (index + 1);
+          const valueDiv  = document.createElement("div");
           valueDiv.className = "input-group";
           valueDiv.innerHTML = `
-            <label>${name}${isDynamic ? ' <span class="dynamic-tag">🔄 dynamic</span>' : ''}</label>
+            <label>
+              ${name}
+              ${isDynamic ? '<span class="dynamic-tag">🔄 dynamic</span>' : ''}
+              <small style="color:#aaa;font-weight:400"> P${priority}</small>
+            </label>
             <input type="text" id="option-${optionId}-value-${index}" placeholder="e.g., High, Low, 7">
           `;
           container.appendChild(valueDiv);
         });
       }
 
-      document.addEventListener("input", function (e) {
-        if (e.target.id.startsWith("criteria-name-") || e.target.id.startsWith("criteria-dynamic-")) {
-          document.querySelectorAll(".option-item").forEach(opt => updateOptionValues(opt.id.split("-")[1]));
-        }
-      });
-      document.addEventListener("change", function (e) {
-        if (e.target.id.startsWith("criteria-dynamic-")) {
-          document.querySelectorAll(".option-item").forEach(opt => updateOptionValues(opt.id.split("-")[1]));
-        }
-      });
+      // Refresh option labels whenever any criteria field changes
+      document.addEventListener("input",  e => { if (e.target.id.startsWith("criteria-")) refreshOptionLabels(); });
+      document.addEventListener("change", e => { if (e.target.id.startsWith("criteria-")) refreshOptionLabels(); });
 
       function analyzeDecision() {
         document.getElementById("results").classList.remove("show");
@@ -350,16 +371,17 @@
         const goal = document.getElementById("decision-goal").value.trim();
 
         const criteria = [];
-        document.querySelectorAll(".criteria-item").forEach((elem) => {
-          const id      = elem.id.split("-")[1];
-          const name    = document.getElementById(`criteria-name-${id}`)?.value.trim();
-          const type    = document.getElementById(`criteria-type-${id}`)?.value;
-          const dynamic = document.getElementById(`criteria-dynamic-${id}`)?.value === "true";
-          if (name) criteria.push({ name, type, dynamic });
+        document.querySelectorAll(".criteria-item").forEach(elem => {
+          const id       = elem.id.split("-")[1];
+          const name     = document.getElementById(`criteria-name-${id}`)?.value.trim();
+          const type     = document.getElementById(`criteria-type-${id}`)?.value;
+          const dynamic  = document.getElementById(`criteria-dynamic-${id}`)?.value === "true";
+          const priority = parseInt(document.getElementById(`criteria-priority-${id}`)?.value) || 1;
+          if (name) criteria.push({ name, type, dynamic, priority });
         });
 
         const options = [];
-        document.querySelectorAll(".option-item").forEach((elem) => {
+        document.querySelectorAll(".option-item").forEach(elem => {
           const id   = elem.id.split("-")[1];
           const name = document.getElementById(`option-name-${id}`)?.value.trim();
           if (name) {
@@ -403,17 +425,20 @@
       }
 
       function displayResults(data) {
-        const div = document.getElementById("results");
+        const div    = document.getElementById("results");
         const medals = ['🥇', '🥈', '🥉'];
 
-        // Weights
+        // Weights — sorted by priority
         let html = `<h2 style="color:#667eea;margin-bottom:20px">📊 Results: ${data.goal}</h2>`;
-        html += `<div class="criteria-weights"><h3 style="color:#667eea;margin-bottom:15px">Auto-Assigned Weights (Priority Order)</h3>`;
-        data.criteria.forEach((c, i) => {
-          const dTag = c.dynamic ? `<span class="dynamic-tag">🔄 dynamic</span>` : "";
+        html += `<div class="criteria-weights"><h3 style="color:#667eea;margin-bottom:15px">Auto-Assigned Weights</h3>`;
+        const sorted = [...data.criteria].sort((a, b) => a.priority - b.priority);
+        sorted.forEach(c => {
+          const dTag    = c.dynamic ? `<span class="dynamic-tag">🔄 dynamic</span>` : "";
+          const tiedTag = c.tied    ? `<span class="tied-tag">= tied</span>`        : "";
           html += `
             <div class="weight-item">
-              <span><strong>Priority #${i+1}:</strong> ${c.name} ${dTag}
+              <span>
+                <strong>Priority ${c.priority}:</strong> ${c.name} ${dTag}${tiedTag}
                 <small style="color:#888">(${c.type === 'benefit' ? '↑ Higher better' : '↓ Lower better'})</small>
               </span>
               <span style="font-weight:700;color:#667eea">${c.weight.toFixed(2)}%</span>
@@ -449,18 +474,14 @@
 
         // Option breakdown
         html += `<div class="breakdown-section"><div class="breakdown-title">📋 Option Breakdown — Strengths & Weaknesses</div>`;
-
         data.option_breakdown.forEach(opt => {
           const isWinner = opt.rank === 1;
-
-          // strengths and weaknesses are plain string arrays
-          const strengthsHtml = opt.strengths.length === 0
+          const strengthsHtml  = opt.strengths.length === 0
             ? `<div class="sw-item" style="color:#aaa">None</div>`
-            : opt.strengths.map(name => `<div class="sw-item">✅ ${name}</div>`).join('');
-
+            : opt.strengths.map(n  => `<div class="sw-item">✅ ${n}</div>`).join('');
           const weaknessesHtml = opt.weaknesses.length === 0
             ? `<div class="sw-item" style="color:#aaa">None</div>`
-            : opt.weaknesses.map(name => `<div class="sw-item">❌ ${name}</div>`).join('');
+            : opt.weaknesses.map(n => `<div class="sw-item">❌ ${n}</div>`).join('');
 
           html += `
             <div class="breakdown-card ${isWinner ? 'winner-card' : ''}">
@@ -481,8 +502,8 @@
               </div>
             </div>`;
         });
-
         html += `</div>`;
+
         div.innerHTML = html;
         div.classList.add("show");
         div.scrollIntoView({ behavior: "smooth", block: "start" });
