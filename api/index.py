@@ -160,6 +160,7 @@ class DecisionEngine:
                 raw_range = abs(ideal_val - worst_val)
                 gap_pct = abs(actual - ideal_val) / raw_range * 100 if raw_range > 0 else 0.0
                 explanation.append({
+                    "id":      cid,
                     "name":    c['name'],
                     "actual":  actual,
                     "gap_pct": round(gap_pct, 1),
@@ -206,11 +207,16 @@ def analyze():
         })
 
     options = []
+    raw_values_map = {}  # {option_name: {c_id: original_string}}
     for o in options_data:
         vals = {}
+        raw_vals = {}
         for i, v in enumerate(o['values']):
-            vals[f"c{i}"] = engine._to_float(v)
+            cid = f"c{i}"
+            vals[cid] = engine._to_float(v)
+            raw_vals[cid] = str(v).strip()  # keep exactly what the user typed
         options.append({"name": o['name'], "values": vals})
+        raw_values_map[o['name']] = raw_vals
 
     original_options = copy.deepcopy(options)
 
@@ -228,11 +234,45 @@ def analyze():
         elif gap_pct <= 60:   return "average"
         else:                 return "below average"
 
+    def find_differentiating_crit(winner_name, winner_expl, all_explanations, original_options):
+        """
+        Find the criterion that best explains WHY the winner won.
+
+        Priority:
+        1. A criterion where the winner has a strictly smaller gap than ALL other options
+           (the winner is genuinely better, not just tied at ideal).
+           Among those, pick the highest-weight one.
+        2. If no such criterion exists (e.g. all criteria are tied across options),
+           fall back to the lowest-gap / highest-weight criterion of the winner.
+        """
+        other_names = [o['name'] for o in original_options if o['name'] != winner_name]
+
+        # For each criterion of the winner, check if it's strictly better than every other option
+        differentiating = []
+        for e in winner_expl:
+            cid = e['id']
+            winner_gap = e['gap_pct']
+            others_gaps = [
+                next(x['gap_pct'] for x in all_explanations[n] if x['id'] == cid)
+                for n in other_names
+            ]
+            # Winner must be strictly better (lower gap) than ALL others
+            if all(winner_gap < og for og in others_gaps):
+                differentiating.append(e)
+
+        if differentiating:
+            # Pick the most important (highest weight) differentiating criterion
+            return max(differentiating, key=lambda e: e['weight'])
+
+        # Fallback: lowest gap, then highest weight
+        return min(winner_expl, key=lambda e: (e['gap_pct'], -e['weight']))
+
     # Winner reasoning
     winner = sim[0]['name']
     winner_expl = all_explanations[winner]
-    best_crit = min(winner_expl, key=lambda e: (e['gap_pct'], -e['weight']))
-    reasoning = f"'{winner}' is selected due to its {gap_to_relative_label(best_crit['gap_pct'])} {best_crit['name']}."
+    best_crit = find_differentiating_crit(winner, winner_expl, all_explanations, original_options)
+    winner_raw_val = raw_values_map[winner][best_crit['id']]
+    reasoning = f"'{winner}' is selected due to its {best_crit['name']} of {winner_raw_val}."
 
     # Per-option breakdown
     breakdown = []
@@ -242,8 +282,9 @@ def analyze():
         confidence = next(r['confidence'] for r in sim if r['name'] == name)
         rank = next(i + 1 for i, r in enumerate(sim) if r['name'] == name)
 
-        opt_best = min(expl, key=lambda e: (e['gap_pct'], -e['weight']))
-        selection_note = f"'{name}' is notable for its {gap_to_relative_label(opt_best['gap_pct'])} {opt_best['name']}."
+        opt_best = find_differentiating_crit(name, expl, all_explanations, original_options)
+        opt_raw_val = raw_values_map[name][opt_best['id']]
+        selection_note = f"'{name}' is notable for its {opt_best['name']} of {opt_raw_val}."
 
         strengths  = [e['name'] for e in expl if e['gap_pct'] <= 40]
         weaknesses = [e['name'] for e in expl if e['gap_pct'] > 40]
