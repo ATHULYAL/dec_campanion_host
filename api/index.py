@@ -217,12 +217,22 @@ def analyze():
     sim = engine.simulate(options, criteria)
     all_explanations, _ = engine.explain_all(original_options, criteria)
 
+    def gap_to_relative_label(gap_pct):
+        """
+        Describe performance relative to other options using gap from ideal.
+        Works for any numeric scale and both benefit/cost criteria.
+        """
+        if gap_pct == 0:      return "optimal"
+        elif gap_pct <= 15:   return "very competitive"
+        elif gap_pct <= 35:   return "competitive"
+        elif gap_pct <= 60:   return "average"
+        else:                 return "below average"
+
     # Winner reasoning
     winner = sim[0]['name']
     winner_expl = all_explanations[winner]
     best_crit = min(winner_expl, key=lambda e: (e['gap_pct'], -e['weight']))
-    value_label = engine.value_to_label(best_crit['actual'])
-    reasoning = f"'{winner}' is selected due to its {value_label} {best_crit['name']}."
+    reasoning = f"'{winner}' is selected due to its {gap_to_relative_label(best_crit['gap_pct'])} {best_crit['name']}."
 
     # Per-option breakdown
     breakdown = []
@@ -233,8 +243,7 @@ def analyze():
         rank = next(i + 1 for i, r in enumerate(sim) if r['name'] == name)
 
         opt_best = min(expl, key=lambda e: (e['gap_pct'], -e['weight']))
-        opt_label = engine.value_to_label(opt_best['actual'])
-        selection_note = f"'{name}' is notable for its {opt_label} {opt_best['name']}."
+        selection_note = f"'{name}' is notable for its {gap_to_relative_label(opt_best['gap_pct'])} {opt_best['name']}."
 
         strengths  = [e['name'] for e in expl if e['gap_pct'] <= 40]
         weaknesses = [e['name'] for e in expl if e['gap_pct'] > 40]
