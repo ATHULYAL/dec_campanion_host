@@ -217,13 +217,28 @@ def analyze():
     sim = engine.simulate(options, criteria)
     all_explanations, _ = engine.explain_all(original_options, criteria)
 
-    # Winner reasoning
-    winner = sim[0]['name']
-    winner_expl = all_explanations[winner]
-    best_crit = min(winner_expl, key=lambda e: (e['gap_pct'], -e['weight']))
-    value_label = engine.value_to_label(best_crit['actual'])
-    reasoning = f"'{winner}' is selected due to its {value_label} {best_crit['name']}."
+# Winner reasoning
+winner = sim[0]['name']
+winner_expl = all_explanations[winner]
 
+best_crit = min(
+    winner_expl,
+    key=lambda e: (e['gap_pct'], -e['weight'])
+)
+
+# Find criterion type
+crit_type = next(
+    c['type'] for c in criteria
+    if c['name'] == best_crit['name']
+)
+
+value_label = engine.value_to_label(best_crit['actual'])
+
+# Correct wording depending on type
+if crit_type == "benefit":
+    reasoning = f"'{winner}' is selected due to its {value_label} {best_crit['name']}."
+else:
+    reasoning = f"'{winner}' is selected due to its low {best_crit['name']}."
     # Per-option breakdown
     breakdown = []
     for o in original_options:
@@ -268,3 +283,4 @@ def analyze():
 
 
 app = app
+
